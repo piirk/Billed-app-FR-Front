@@ -1,6 +1,8 @@
 import { ROUTES_PATH } from '../constants/routes.js'
 import Logout from "./Logout.js"
 
+const ALLOWED_FILE_TYPES = ['image/png', 'image/jpeg'];
+
 export default class NewBill {
   constructor({ document, onNavigate, store, localStorage }) {
     this.document = document
@@ -19,8 +21,8 @@ export default class NewBill {
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
 
-    // Check if the file is a png or jpeg image
-    if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
+    // Check if the file type is allowed
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       alert('Ce format de fichier n\'est pas accepté')
       this.document.querySelector(`input[data-testid="file"]`).value = null
       return

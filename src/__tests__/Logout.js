@@ -4,7 +4,7 @@
 
 import { screen } from "@testing-library/dom"
 import Logout from "../containers/Logout.js"
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom';
 import { localStorageMock } from "../__mocks__/localStorage.js"
 import DashboardUI from "../views/DashboardUI.js"
 import userEvent from '@testing-library/user-event'
@@ -28,7 +28,10 @@ const bills = [{
 
 describe('Given I am connected', () => {
   describe('When I click on disconnect button', () => {
-    test(('Then, I should be sent to login page'), () => {
+    test(('Then, I should be sent to login page'), async () => {
+
+      const user = userEvent.setup();
+
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
@@ -42,7 +45,7 @@ describe('Given I am connected', () => {
 
       const disco = screen.getByTestId('layout-disconnect')
       disco.addEventListener('click', handleClick)
-      userEvent.click(disco)
+      await user.click(disco)
       expect(handleClick).toHaveBeenCalled()
       expect(screen.getByText('Administration')).toBeTruthy()
     })

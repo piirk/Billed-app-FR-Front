@@ -50,6 +50,8 @@ describe('Given I am connected as an Admin', () => {
   describe('When I am on Dashboard page and I click on arrow', () => {
     test('Then, tickets list should be unfolding, and cards should appear', async () => {
 
+      const user = userEvent.setup();
+
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
@@ -68,23 +70,24 @@ describe('Given I am connected as an Admin', () => {
       const handleShowTickets2 = jest.fn((e) => dashboard.handleShowTickets(e, bills, 2))
       const handleShowTickets3 = jest.fn((e) => dashboard.handleShowTickets(e, bills, 3))
 
-      const icon1 = screen.getByTestId('arrow-icon1')
-      const icon2 = screen.getByTestId('arrow-icon2')
-      const icon3 = screen.getByTestId('arrow-icon3')
+      const icon1 = await screen.findByTestId('arrow-icon1')
+      const icon2 = await screen.findByTestId('arrow-icon2')
+      const icon3 = await screen.findByTestId('arrow-icon3')
 
       icon1.addEventListener('click', handleShowTickets1)
-      userEvent.click(icon1)
+      await user.click(icon1)
       expect(handleShowTickets1).toHaveBeenCalled()
       await waitFor(() => screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`) )
       expect(screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`)).toBeTruthy()
+
       icon2.addEventListener('click', handleShowTickets2)
-      userEvent.click(icon2)
+      await user.click(icon2)
       expect(handleShowTickets2).toHaveBeenCalled()
       await waitFor(() => screen.getByTestId(`open-billUIUZtnPQvnbFnB0ozvJh`) )
       expect(screen.getByTestId(`open-billUIUZtnPQvnbFnB0ozvJh`)).toBeTruthy()
 
       icon3.addEventListener('click', handleShowTickets3)
-      userEvent.click(icon3)
+      await user.click(icon3)
       expect(handleShowTickets3).toHaveBeenCalled()
       await waitFor(() => screen.getByTestId(`open-billBeKy5Mo4jkmdfPGYpTxZ`) )
       expect(screen.getByTestId(`open-billBeKy5Mo4jkmdfPGYpTxZ`)).toBeTruthy()
@@ -92,7 +95,9 @@ describe('Given I am connected as an Admin', () => {
   })
 
   describe('When I am on Dashboard page and I click on edit icon of a card', () => {
-    test('Then, right form should be filled',  () => {
+    test('Then, right form should be filled', async () => {
+
+      const user = userEvent.setup();
 
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
@@ -110,17 +115,19 @@ describe('Given I am connected as an Admin', () => {
       const handleShowTickets1 = jest.fn((e) => dashboard.handleShowTickets(e, bills, 1))
       const icon1 = screen.getByTestId('arrow-icon1')
       icon1.addEventListener('click', handleShowTickets1)
-      userEvent.click(icon1)
+      await user.click(icon1)
       expect(handleShowTickets1).toHaveBeenCalled()
       expect(screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`)).toBeTruthy()
       const iconEdit = screen.getByTestId('open-bill47qAXb6fIm2zOKkLzMro')
-      userEvent.click(iconEdit)
+      await user.click(iconEdit)
       expect(screen.getByTestId(`dashboard-form`)).toBeTruthy()
     })
   })
 
   describe('When I am on Dashboard page and I click 2 times on edit icon of a card', () => {
-    test('Then, big bill Icon should Appear',  () => {
+    test('Then, big bill Icon should Appear', async () => {
+
+      const user = userEvent.setup();
 
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
@@ -139,12 +146,12 @@ describe('Given I am connected as an Admin', () => {
       const handleShowTickets1 = jest.fn((e) => dashboard.handleShowTickets(e, bills, 1))
       const icon1 = screen.getByTestId('arrow-icon1')
       icon1.addEventListener('click', handleShowTickets1)
-      userEvent.click(icon1)
+      await user.click(icon1)
       expect(handleShowTickets1).toHaveBeenCalled()
       expect(screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`)).toBeTruthy()
       const iconEdit = screen.getByTestId('open-bill47qAXb6fIm2zOKkLzMro')
-      userEvent.click(iconEdit)
-      userEvent.click(iconEdit)
+      await user.click(iconEdit)
+      await user.click(iconEdit)
       const bigBilledIcon = screen.queryByTestId("big-billed-icon")
       expect(bigBilledIcon).toBeTruthy()
     })
@@ -214,7 +221,9 @@ describe('Given I am connected as Admin, and I am on Dashboard page, and I click
 
 describe('Given I am connected as Admin and I am on Dashboard page and I clicked on a bill', () => {
   describe('When I click on the icon eye', () => {
-    test('A modal should open', () => {
+    test('A modal should open', async () => {
+      const user = userEvent.setup()
+
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Admin'
@@ -231,7 +240,7 @@ describe('Given I am connected as Admin and I am on Dashboard page and I clicked
       const handleClickIconEye = jest.fn(dashboard.handleClickIconEye)
       const eye = screen.getByTestId('icon-eye-d')
       eye.addEventListener('click', handleClickIconEye)
-      userEvent.click(eye)
+      await user.click(eye)
       expect(handleClickIconEye).toHaveBeenCalled()
 
       const modale = screen.getByTestId('modaleFileAdmin')

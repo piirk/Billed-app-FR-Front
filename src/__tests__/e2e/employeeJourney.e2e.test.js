@@ -4,9 +4,15 @@
 
 import LoginUI from "../../views/LoginUI";
 import Login from "../../containers/Login.js";
-import { ROUTES } from "../../constants/routes";
-import { fireEvent, screen } from "@testing-library/dom";
-import Actions from "../../views/Actions.js";
+import { ROUTES, ROUTES_PATH } from "../../constants/routes";
+import { fireEvent, screen, waitFor } from "@testing-library/dom";
+import userEvent from '@testing-library/user-event';
+import BillsUI from "../../views/BillsUI.js";
+import DashboardUI from "../../views/DashboardUI.js";
+import Bills from "../../containers/Bills.js";
+import Logout from "../../containers/Logout.js";
+import { bills } from "../../fixtures/bills.js";
+import { localStorageMock } from "../../__mocks__/localStorage.js";
 import '@testing-library/jest-dom';
 
 describe("Given that I am a user on login page", () => {
@@ -115,6 +121,94 @@ describe("Given that I am a user on login page", () => {
 
     test("It should renders Bills page", () => {
       expect(screen.getAllByText("Mes notes de frais")).toBeTruthy();
+    });
+  });
+});
+
+describe('Given I am connected as an Employee and I am on Bills Page', () => {
+  describe('When I click on the eye icon', () => {
+    test('Then it should renders the modal', async () => {
+      const user = userEvent.setup();
+
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname })
+      }
+
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+
+      const store = jest.fn();
+
+      const billsList = new Bills({
+        document,
+        onNavigate,
+        store,
+        localStorage: window.localStorage
+      });
+
+      document.body.innerHTML = BillsUI({ data: bills });
+
+      await waitFor(() => screen.getAllByTestId('icon-eye')[0]);
+      const iconEye = screen.getAllByTestId('icon-eye')[0];
+      expect(iconEye).toBeTruthy();
+      
+      $.fn.modal = jest.fn();
+      $.fn.width = jest.fn().mockReturnValue(500);
+      $.fn.find = jest.fn().mockReturnThis();
+      $.fn.html = jest.fn();
+      
+      const handleClickIconEye = jest.fn(() => {
+        billsList.handleClickIconEye(iconEye);
+      });
+
+      iconEye.addEventListener('click', handleClickIconEye);
+
+      await user.click(iconEye);
+      expect(handleClickIconEye).toHaveBeenCalled();
+      expect($.fn.modal).toHaveBeenCalledWith('show');
+
+      const billUrl = iconEye.getAttribute('data-bill-url');
+      const imgWidth = Math.floor($('#modaleFile').width() * 0.5);
+
+      $('#modaleFile').find('.modal-body').html(
+        `<div style='text-align: center;' class="bill-proof-container">
+          <img width=${imgWidth} src=${billUrl} alt="Bill" />
+        </div>`);
+
+      expect($.fn.find).toHaveBeenCalled();
+      expect($.fn.html).toHaveBeenCalledWith(
+        `<div style='text-align: center;' class="bill-proof-container">
+          <img width=${imgWidth} src=${billUrl} alt="Bill" />
+        </div>`
+      );
+      expect($.fn.width).toHaveBeenCalled();
+      expect(imgWidth).toBe(250);
+    });
+  });
+
+  describe('When I click on disconnect button', () => {
+    test(('Then, I should be sent to login page'), async () => {
+
+      const user = userEvent.setup();
+
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname })
+      }
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      document.body.innerHTML = DashboardUI({ bills })
+      const logout = new Logout({ document, onNavigate, localStorage })
+      const handleClick = jest.fn(logout.handleClick)
+
+      const disco = screen.getByTestId('layout-disconnect')
+      disco.addEventListener('click', handleClick)
+      await user.click(disco)
+      expect(handleClick).toHaveBeenCalled()
+      expect(screen.getByText('Employé')).toBeTruthy()
     });
   });
 });

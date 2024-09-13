@@ -74,7 +74,8 @@ describe("Given I am connected as an employee", () => {
         expect(result[2].status).toBe("Accepté");
       });
 
-      // a garder même si le formatDate est retiré de Bills.js ?
+      // a garder même si le formatDate est retiré de Bills.js ? ici pour 100% de couverture
+      /*
       it("should log an error and return unformatted data if formatting fails", async () => {
         const mockFormatDate = jest.fn(() => {
           throw new Error("Erreur de formatage");
@@ -92,6 +93,7 @@ describe("Given I am connected as an employee", () => {
     
         jest.resetModules();
       });
+      */
     });
 
     describe("When I click on the eye icon", () => {

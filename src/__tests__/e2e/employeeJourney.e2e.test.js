@@ -8,7 +8,6 @@ import { ROUTES } from "../../constants/routes";
 import { fireEvent, screen, waitFor } from "@testing-library/dom";
 import userEvent from '@testing-library/user-event';
 import BillsUI from "../../views/BillsUI.js";
-import DashboardUI from "../../views/DashboardUI.js";
 import Bills from "../../containers/Bills.js";
 import Logout from "../../containers/Logout.js";
 import { bills } from "../../fixtures/bills.js";

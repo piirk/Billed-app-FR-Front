@@ -14,6 +14,9 @@ import Logout from "../../containers/Logout.js";
 import { bills } from "../../fixtures/bills.js";
 import { localStorageMock } from "../../__mocks__/localStorage.js";
 import '@testing-library/jest-dom';
+import NewBillUI from "../../views/NewBillUI.js";
+import NewBill from "../../containers/NewBill.js";
+import mockStore from '../../__mocks__/store';
 
 describe("Given that I am a user on login page", () => {
   describe("When I do not fill fields and I click on employee button Login In", () => {
@@ -126,29 +129,26 @@ describe("Given that I am a user on login page", () => {
 });
 
 describe('Given I am connected as an Employee and I am on Bills Page', () => {
+  beforeEach(() => {
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+    window.localStorage.setItem('user', JSON.stringify({
+      type: 'Employee'
+    }));
+    document.body.innerHTML = BillsUI({ data: bills });
+  });
+
   describe('When I click on the eye icon', () => {
     test('Then it should renders the modal', async () => {
       const user = userEvent.setup();
-
       const onNavigate = (pathname) => {
-        document.body.innerHTML = ROUTES({ pathname })
-      }
-
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', JSON.stringify({
-        type: 'Employee'
-      }))
-
-      const store = jest.fn();
-
-      const billsList = new Bills({
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      const billsInstance = new Bills({
         document,
         onNavigate,
-        store,
+        mockStore,
         localStorage: window.localStorage
       });
-
-      document.body.innerHTML = BillsUI({ data: bills });
 
       await waitFor(() => screen.getAllByTestId('icon-eye')[0]);
       const iconEye = screen.getAllByTestId('icon-eye')[0];
@@ -160,7 +160,7 @@ describe('Given I am connected as an Employee and I am on Bills Page', () => {
       $.fn.html = jest.fn();
       
       const handleClickIconEye = jest.fn(() => {
-        billsList.handleClickIconEye(iconEye);
+        billsInstance.handleClickIconEye(iconEye);
       });
 
       iconEye.addEventListener('click', handleClickIconEye);
@@ -190,59 +190,64 @@ describe('Given I am connected as an Employee and I am on Bills Page', () => {
 
   describe('When I click on the new bill button', () => {
     test('Then it should renders the new bill form', async () => {
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-        window.localStorage.setItem('user', JSON.stringify({
-          type: 'Employee'
-        }))
-      
-        document.body.innerHTML = BillsUI({ data: bills })
-      
-        const onNavigate = (pathname) => {
-          document.body.innerHTML = ROUTES({ pathname });
-        };
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      new Bills({
+        document,
+        onNavigate,
+        mockStore,
+        localStorage: window.localStorage
+      });
+    
+      await waitFor(() => screen.getByTestId('btn-new-bill'));
+      const newBillButton = screen.getByTestId('btn-new-bill');
+    
+      fireEvent.click(newBillButton);
 
-        const store = jest.fn();
+      await waitFor(() => {
+        const formNewBill = screen.queryByTestId('form-new-bill');
+        expect(formNewBill).toBeTruthy();
+      });
+    });
+  });
 
-        new Bills({
-          document,
-          onNavigate,
-          store,
-          localStorage: window.localStorage
-        })
-      
-        await waitFor(() => screen.getByTestId('btn-new-bill'))
-        const newBillButton = screen.getByTestId('btn-new-bill')
-      
-        fireEvent.click(newBillButton)
-
-        await waitFor(() => {
-          const formNewBill = screen.queryByTestId('form-new-bill')
-          expect(formNewBill).toBeTruthy()
-        })
+  describe('When I click on "Return" button from navigator', () => {
+    test('Then I stay on Bills page', async () => {
+      window.history.pushState({}, 'somewhere', '/employee/somewhere')
+      window.history.back()
+      expect(screen.getByText('Mes notes de frais')).toBeTruthy()
     });
   });
 
   describe('When I click on disconnect button', () => {
     test(('Then I should be sent to login page'), async () => {
-
       const user = userEvent.setup();
-
       const onNavigate = (pathname) => {
-        document.body.innerHTML = ROUTES({ pathname })
-      }
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', JSON.stringify({
-        type: 'Employee'
-      }))
-      document.body.innerHTML = DashboardUI({ bills })
-      const logout = new Logout({ document, onNavigate, localStorage })
-      const handleClick = jest.fn(logout.handleClick)
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      new Bills({
+        document,
+        onNavigate,
+        mockStore,
+        localStorage: window.localStorage
+      });
 
+      const handleClick = jest.fn(Logout.handleClick)
       const disco = screen.getByTestId('layout-disconnect')
       disco.addEventListener('click', handleClick)
+
       await user.click(disco)
       expect(handleClick).toHaveBeenCalled()
       expect(screen.getByText('Employé')).toBeTruthy()
+    });
+  });
+});
+
+describe('Given I am connected as an Employee and I am on NewBill Page', () => {
+  describe('', () => {
+    test('', async () => {
+      
     });
   });
 });

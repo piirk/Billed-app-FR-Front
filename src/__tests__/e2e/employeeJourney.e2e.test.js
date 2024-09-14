@@ -4,7 +4,7 @@
 
 import LoginUI from "../../views/LoginUI";
 import Login from "../../containers/Login.js";
-import { ROUTES, ROUTES_PATH } from "../../constants/routes";
+import { ROUTES } from "../../constants/routes";
 import { fireEvent, screen, waitFor } from "@testing-library/dom";
 import userEvent from '@testing-library/user-event';
 import BillsUI from "../../views/BillsUI.js";
@@ -188,8 +188,42 @@ describe('Given I am connected as an Employee and I am on Bills Page', () => {
     });
   });
 
+  describe('When I click on the new bill button', () => {
+    test('Then it should renders the new bill form', async () => {
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+        window.localStorage.setItem('user', JSON.stringify({
+          type: 'Employee'
+        }))
+      
+        document.body.innerHTML = BillsUI({ data: bills })
+      
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+
+        const store = jest.fn();
+
+        new Bills({
+          document,
+          onNavigate,
+          store,
+          localStorage: window.localStorage
+        })
+      
+        await waitFor(() => screen.getByTestId('btn-new-bill'))
+        const newBillButton = screen.getByTestId('btn-new-bill')
+      
+        fireEvent.click(newBillButton)
+
+        await waitFor(() => {
+          const formNewBill = screen.queryByTestId('form-new-bill')
+          expect(formNewBill).toBeTruthy()
+        })
+    });
+  });
+
   describe('When I click on disconnect button', () => {
-    test(('Then, I should be sent to login page'), async () => {
+    test(('Then I should be sent to login page'), async () => {
 
       const user = userEvent.setup();
 

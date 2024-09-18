@@ -95,6 +95,56 @@ describe("Given I am connected as an employee", () => {
       });
       */
     });
+    describe('When I click on the eye icon', () => {
+      test('Then it should renders the modal', async () => {
+        const user = userEvent.setup();
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+        const billsInstance = new Bills({
+          document,
+          onNavigate,
+          mockStore,
+          localStorage: window.localStorage
+        });
+  
+        await waitFor(() => screen.getAllByTestId('icon-eye')[0]);
+        const iconEye = screen.getAllByTestId('icon-eye')[0];
+        expect(iconEye).toBeTruthy();
+        
+        $.fn.modal = jest.fn();
+        $.fn.width = jest.fn().mockReturnValue(500);
+        $.fn.find = jest.fn().mockReturnThis();
+        $.fn.html = jest.fn();
+        
+        const handleClickIconEye = jest.fn(() => {
+          billsInstance.handleClickIconEye(iconEye);
+        });
+  
+        iconEye.addEventListener('click', handleClickIconEye);
+  
+        await user.click(iconEye);
+        expect(handleClickIconEye).toHaveBeenCalled();
+        expect($.fn.modal).toHaveBeenCalledWith('show');
+  
+        const billUrl = iconEye.getAttribute('data-bill-url');
+        const imgWidth = Math.floor($('#modaleFile').width() * 0.5);
+  
+        $('#modaleFile').find('.modal-body').html(
+          `<div style='text-align: center;' class="bill-proof-container">
+            <img width=${imgWidth} src=${billUrl} alt="Bill" />
+          </div>`);
+  
+        expect($.fn.find).toHaveBeenCalled();
+        expect($.fn.html).toHaveBeenCalledWith(
+          `<div style='text-align: center;' class="bill-proof-container">
+            <img width=${imgWidth} src=${billUrl} alt="Bill" />
+          </div>`
+        );
+        expect($.fn.width).toHaveBeenCalled();
+        expect(imgWidth).toBe(250);
+      });
+    });
 
     describe("when i click on the new bill button", () => {
       test("then the new bill form should display", async () => {

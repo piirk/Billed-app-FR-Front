@@ -48,19 +48,16 @@ describe("Given I am connected as an employee", () => {
       const newBillButton = screen.getByTestId('btn-new-bill')
       expect(newBillButton).toBeTruthy()
     })
-    describe("when i call getBills", () => {
-      let billsInstance;
 
-      beforeEach( () => {
-        billsInstance = new Bills({
+    describe("when i call getBills", () => {
+      test("then it should fetch bills from the mock API store and ", async () => {
+        const billsInstance = new Bills({
           document,
           onNavigate: jest.fn(),
           store: mockStore,
           localStorage: window.localStorage,
         });
-      });
 
-      it("should fetch bills from the mock API store and ", async () => {
         const result = await billsInstance.getBills();
   
         expect(result.length).toBe(4);
@@ -68,28 +65,8 @@ describe("Given I am connected as an employee", () => {
         expect(result[1].status).toBe("Refusé");
         expect(result[2].status).toBe("Accepté");
       });
-
-      // a garder même si le formatDate est retiré de Bills.js ? ici pour 100% de couverture
-      /*
-      it("should log an error and return unformatted data if formatting fails", async () => {
-        const mockFormatDate = jest.fn(() => {
-          throw new Error("Erreur de formatage");
-        });
-    
-        jest.mock("../app/format.js", () => ({
-          formatDate: mockFormatDate,
-          formatStatus: jest.requireActual("../app/format.js").formatStatus,
-        }));
-    
-        const consoleSpy = jest.spyOn(console, "log");
-        const result = await billsInstance.getBills();
-        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error), "for", expect.any(Object));
-        expect(result[0].date).toBe("2004-04-04");
-    
-        jest.resetModules();
-      });
-      */
     });
+
     describe('When I click on the eye icon', () => {
       test('Then it should renders the modal', async () => {
         const user = userEvent.setup();
@@ -179,5 +156,19 @@ describe("Given I am connected as an employee", () => {
         })
       })
     })
+
+    describe('When I click on "Return" button from navigator', () => {
+      test('Then I stay on Bills page', async () => {
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        window.localStorage.setItem('user', JSON.stringify({
+          type: 'Employee'
+        }));
+        document.body.innerHTML = BillsUI({ data: bills });
+
+        window.history.pushState({}, 'somewhere', '/employee/somewhere')
+        window.history.back()
+        expect(screen.getByText('Mes notes de frais')).toBeTruthy()
+      });
+    });
   })
 })

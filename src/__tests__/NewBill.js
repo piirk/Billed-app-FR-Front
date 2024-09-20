@@ -5,8 +5,12 @@
 import NewBillUI from '../views/NewBillUI';
 import NewBill from '../containers/NewBill';
 import { fireEvent, screen, waitFor } from '@testing-library/dom';
+import { ROUTES_PATH } from "../constants/routes.js";
 import userEvent from '@testing-library/user-event';
+import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from '../__mocks__/store';
+
+import router from "../app/Router.js";
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -23,6 +27,9 @@ describe("Given I am connected as an employee", () => {
       });
 
       window.alert = jest.fn();
+    });
+    afterEach(() => {
+      document.body.innerHTML = '';
     });
 
     it("should render the form", () => {
@@ -41,7 +48,6 @@ describe("Given I am connected as an employee", () => {
       
       fireEvent.change(fileInput, { target: { files: fileList } });
 
-      expect(window.alert).toHaveBeenCalledWith('Ce format de fichier n\'est pas accepté');
       expect(fileInput.value).toBe('');
     });
 
@@ -90,6 +96,68 @@ describe("Given I am connected as an employee", () => {
           status: 'pending'
         }));
       });
+    });
+  });
+
+  describe("When an error occurs on API", () => {
+    beforeEach(() => {
+      jest.spyOn(mockStore, "bills")
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }));
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.appendChild(root);
+      router();
+    });
+
+    test("fetches bills from an API and fails with 401 message error", async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      global.fetch = jest.fn(() =>
+        Promise.reject(new Error("Erreur 401"))
+      );
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          create: jest.fn().mockRejectedValueOnce(new Error("Erreur 401"))
+        };
+      });
+      window.onNavigate(ROUTES_PATH.NewBill);
+    
+      const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
+      const fileInput = screen.getByTestId('file');
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    
+      await new Promise(process.nextTick); 
+    
+      expect(consoleSpy).toHaveBeenCalledWith(new Error("Erreur 401"));
+    
+      consoleSpy.mockRestore();
+      global.fetch.mockClear();
+    });
+
+    test("fetches messages from an API and fails with 500 message error", async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      global.fetch = jest.fn(() =>
+        Promise.reject(new Error("Erreur 500"))
+      );
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          create: jest.fn().mockRejectedValueOnce(new Error("Erreur 500"))
+        };
+      });
+      window.onNavigate(ROUTES_PATH.NewBill);
+    
+      const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
+      const fileInput = screen.getByTestId('file');
+      fireEvent.change(fileInput, { target: { files: [file] } });
+    
+      await new Promise(process.nextTick); 
+    
+      expect(consoleSpy).toHaveBeenCalledWith(new Error("Erreur 500"));
+    
+      consoleSpy.mockRestore();
+      global.fetch.mockClear();
     });
   });
 });

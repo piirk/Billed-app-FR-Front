@@ -60,15 +60,10 @@ describe("Given I am connected as an employee", () => {
         });
       });
 
-      it("should fetch bills from the mock API store", async () => {
+      it("should fetch bills from the mock API store and ", async () => {
         const result = await billsInstance.getBills();
   
         expect(result.length).toBe(4);
-      });
-
-      it("should format the status correctly", async () => {
-        const result = await billsInstance.getBills();
-      
         expect(result[0].status).toBe("En attente");
         expect(result[1].status).toBe("Refusé");
         expect(result[2].status).toBe("Accepté");

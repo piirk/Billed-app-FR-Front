@@ -155,7 +155,7 @@ describe("Given I am connected as an employee", () => {
 
     // integration test GET
     describe("when i call getBills", () => {
-      test("then it should fetch bills from the mock API store and ", async () => {
+      test("then it should fetch bills from the mock API store", async () => {
         const billsInstance = new Bills({
           document,
           onNavigate: jest.fn(),
@@ -172,9 +172,30 @@ describe("Given I am connected as an employee", () => {
       });
     });
 
+    describe("when an error occurs on API", () => {
+      test("fetches bills from an API and fails with 401 message error", async () => {
+        jest.spyOn(mockStore, "bills");
+        const root = document.createElement("div");
+        root.setAttribute("id", "root");
+        document.body.appendChild(root);
+        router();
+
+        mockStore.bills.mockImplementationOnce(() => {
+          return {
+            list : () =>  {
+              return Promise.reject(new Error("Erreur 401"));
+            }
+          }});
+        window.onNavigate(ROUTES_PATH.Bills);
+        await new Promise(process.nextTick);
+        const message = await screen.getByText(/Erreur 401/);
+        expect(message).toBeTruthy();
+      });
+    });
+
     describe("When an error occurs on API", () => {
       beforeEach(() => {
-        jest.spyOn(mockStore, "bills")
+        jest.spyOn(mockStore, "bills");
         Object.defineProperty(window, 'localStorage', { value: localStorageMock });
         window.localStorage.setItem('user', JSON.stringify({
           type: 'Employee'

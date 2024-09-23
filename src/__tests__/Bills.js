@@ -171,8 +171,8 @@ describe("Given I am connected as an employee", () => {
         expect(result[2].status).toBe("Accepté");
       });
     });
-
-    describe("when an error occurs on API", () => {
+    
+    describe("When an error occurs on API", () => {
       test("fetches bills from an API and fails with 401 message error", async () => {
         jest.spyOn(mockStore, "bills");
         const root = document.createElement("div");
@@ -191,9 +191,7 @@ describe("Given I am connected as an employee", () => {
         const message = await screen.getByText(/Erreur 401/);
         expect(message).toBeTruthy();
       });
-    });
 
-    describe("When an error occurs on API", () => {
       beforeEach(() => {
         jest.spyOn(mockStore, "bills");
         Object.defineProperty(window, 'localStorage', { value: localStorageMock });

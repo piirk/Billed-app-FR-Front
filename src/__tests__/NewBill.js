@@ -36,7 +36,7 @@ describe("Given I am connected as an employee", () => {
       expect(screen.getByTestId('form-new-bill')).toBeTruthy();
     });
 
-    it('should display an alert for unsupported file types', () => {
+    it('should not save unsupported file types', () => {
       const file = new File(['content'], 'test.txt', { type: 'text/plain' });
       
       const fileList = {

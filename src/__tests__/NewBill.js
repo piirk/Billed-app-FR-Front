@@ -11,7 +11,6 @@ import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from '../__mocks__/store';
 
 import router from "../app/Router.js";
-import { get } from 'jquery';
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {

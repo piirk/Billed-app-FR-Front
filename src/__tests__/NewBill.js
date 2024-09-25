@@ -11,6 +11,7 @@ import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from '../__mocks__/store';
 
 import router from "../app/Router.js";
+import { get } from 'jquery';
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -30,6 +31,7 @@ describe("Given I am connected as an employee", () => {
     });
     afterEach(() => {
       document.body.innerHTML = '';
+      jest.clearAllMocks();
     });
 
     it("should render the form", () => {
@@ -96,6 +98,13 @@ describe("Given I am connected as an employee", () => {
           status: 'pending'
         }));
       });
+    });
+
+    it('should stay on the form after submit if the fields are empty', () => {
+      const form = screen.getByTestId('form-new-bill');
+      fireEvent.submit(form);
+
+      expect(screen.getByTestId('form-new-bill')).toBeTruthy();
     });
   });
 

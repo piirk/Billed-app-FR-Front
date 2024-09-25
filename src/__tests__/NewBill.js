@@ -110,7 +110,7 @@ describe("Given I am connected as an employee", () => {
 
   describe("When an error occurs on API", () => {
     beforeEach(() => {
-      jest.spyOn(mockStore, "bills")
+      jest.spyOn(mockStore, "bills");
       Object.defineProperty(window, 'localStorage', { value: localStorageMock });
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Employee'
@@ -126,11 +126,12 @@ describe("Given I am connected as an employee", () => {
       global.fetch = jest.fn(() =>
         Promise.reject(new Error("Erreur 401"))
       );
-      mockStore.bills.mockImplementationOnce(() => {
-        return {
-          create: jest.fn().mockRejectedValueOnce(new Error("Erreur 401"))
-        };
-      });
+      const mockBill =
+        mockStore.bills.mockImplementationOnce(() => {
+          return {
+            create: jest.fn().mockRejectedValueOnce(new Error("Erreur 401"))
+          };
+        });
       window.onNavigate(ROUTES_PATH.NewBill);
     
       const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
@@ -140,6 +141,9 @@ describe("Given I am connected as an employee", () => {
       await new Promise(process.nextTick); 
     
       expect(consoleSpy).toHaveBeenCalledWith(new Error("Erreur 401"));
+      
+      await expect(mockBill().create).rejects.toThrow("Erreur 401");
+      expect(mockBill).toHaveBeenCalled();
     
       consoleSpy.mockRestore();
       global.fetch.mockClear();
@@ -150,6 +154,7 @@ describe("Given I am connected as an employee", () => {
       global.fetch = jest.fn(() =>
         Promise.reject(new Error("Erreur 500"))
       );
+      const mockBill =
       mockStore.bills.mockImplementationOnce(() => {
         return {
           create: jest.fn().mockRejectedValueOnce(new Error("Erreur 500"))
@@ -164,6 +169,7 @@ describe("Given I am connected as an employee", () => {
       await new Promise(process.nextTick); 
     
       expect(consoleSpy).toHaveBeenCalledWith(new Error("Erreur 500"));
+      expect(mockBill).toHaveBeenCalled();
     
       consoleSpy.mockRestore();
       global.fetch.mockClear();
